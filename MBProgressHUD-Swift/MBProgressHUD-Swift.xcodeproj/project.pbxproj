@@ -12,6 +12,8 @@
 		69C8B3621FA027AD00F9D1DE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 69C8B3601FA027AD00F9D1DE /* Main.storyboard */; };
 		69C8B3641FA027AD00F9D1DE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 69C8B3631FA027AD00F9D1DE /* Assets.xcassets */; };
 		69C8B3671FA027AD00F9D1DE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 69C8B3651FA027AD00F9D1DE /* LaunchScreen.storyboard */; };
+		69C8B3701FA02A9E00F9D1DE /* UIView+MBExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C8B36F1FA02A9E00F9D1DE /* UIView+MBExtension.swift */; };
+		69C8B3721FA02B6D00F9D1DE /* MBProgressHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C8B3711FA02B6D00F9D1DE /* MBProgressHUD.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,8 @@
 		69C8B3631FA027AD00F9D1DE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		69C8B3661FA027AD00F9D1DE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		69C8B3681FA027AD00F9D1DE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		69C8B36F1FA02A9E00F9D1DE /* UIView+MBExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+MBExtension.swift"; sourceTree = "<group>"; };
+		69C8B3711FA02B6D00F9D1DE /* MBProgressHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MBProgressHUD.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +72,8 @@
 		69C8B36E1FA0280800F9D1DE /* MBProgressHUD-Swift */ = {
 			isa = PBXGroup;
 			children = (
+				69C8B36F1FA02A9E00F9D1DE /* UIView+MBExtension.swift */,
+				69C8B3711FA02B6D00F9D1DE /* MBProgressHUD.swift */,
 			);
 			path = "MBProgressHUD-Swift";
 			sourceTree = "<group>";
@@ -144,8 +150,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				69C8B3701FA02A9E00F9D1DE /* UIView+MBExtension.swift in Sources */,
 				69C8B35F1FA027AD00F9D1DE /* ViewController.swift in Sources */,
 				69C8B35D1FA027AD00F9D1DE /* AppDelegate.swift in Sources */,
+				69C8B3721FA02B6D00F9D1DE /* MBProgressHUD.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

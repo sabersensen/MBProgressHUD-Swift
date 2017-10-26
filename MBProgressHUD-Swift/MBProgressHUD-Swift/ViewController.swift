@@ -12,7 +12,16 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        let btn = UIButton.init(type: UIButtonType.contactAdd)
+        btn.frame = CGRect.init(x: 0, y: 200, width: 30, height: 40)
+        btn.addTarget(self, action: #selector(ViewController.onClick), for: UIControlEvents.touchUpInside)
+        self.view.addSubview(btn)
+        
+    }
+    
+    @objc func onClick() {
+        let hud = MBProgressHUD.init(frame: self.view.frame)
+        self.view .addSubview(hud)
     }
 
     override func didReceiveMemoryWarning() {

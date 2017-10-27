@@ -53,8 +53,13 @@ class MBProgressHUD: UIView {
     
     public var defaultMotionEffectsEnabled:Bool = true
     
+    public var offset:CGPoint = CGPoint.init(x: 0, y: 0)
+    
+    public var minSize:CGSize = CGSize.zero
+    
     public var contentColor:UIColor = (kCFCoreFoundationVersionNumber<kCFCoreFoundationVersionNumber_iOS_7_0) ?UIColor.white:UIColor.init(white: 0.0, alpha: 0.7)
     
+    var paddingConstraints:[NSLayoutConstraint] = [NSLayoutConstraint]()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -63,6 +68,117 @@ class MBProgressHUD: UIView {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         self.commonInit()
+    }
+    
+    override func layoutSubviews() {
+        if self.needsUpdateConstraints() {
+            self.updatePaddingConstraints()
+        }
+        super.layoutSubviews()
+    }
+    
+    var bezelConstraints:[NSLayoutConstraint]!
+    
+    
+    override func updateConstraints() {
+        var bezelConstraints = [NSLayoutConstraint]()
+        let metrics = ["margin":self.margin]
+        
+        var subviews:[UIView] = [self.topSpacer,self.label,self.detailsLabel,self.button,self.bottomSpacer]
+        if (self.indicator != nil){
+            subviews.insert(self.indicator, at: 1)
+        }
+        
+        // Remove existing constraints
+        self.removeConstraints(self.constraints)
+        self.topSpacer.removeConstraints(self.topSpacer.constraints)
+        self.bottomSpacer.removeConstraints(self.bottomSpacer.constraints)
+        if self.bezelConstraints != nil {
+            self.bezelView.removeConstraints(self.bezelConstraints)
+            self.bezelConstraints = nil
+        }
+        
+        // Center bezel in container (self), applying the offset if set
+        var centeringConstraints = [NSLayoutConstraint]()
+        centeringConstraints.append(NSLayoutConstraint.init(item: self.bezelView, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: self, attribute: NSLayoutAttribute.centerX, multiplier: 1.0, constant: self.offset.x))
+        centeringConstraints.append(NSLayoutConstraint.init(item: self.bezelView, attribute: NSLayoutAttribute.centerY, relatedBy: NSLayoutRelation.equal, toItem: self, attribute: NSLayoutAttribute.centerY, multiplier: 1.0, constant: self.offset.y))
+        self.applyPriority(priority: UILayoutPriority(rawValue: 998.0), constraints: centeringConstraints)
+        self.addConstraints(centeringConstraints)
+        
+        // Ensure minimum side margin is kept
+        var sideConstraints = [NSLayoutConstraint]()
+        sideConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "|-(>=margin)-[v1]-(>=margin)-|", options: NSLayoutFormatOptions.init(rawValue: 0), metrics: metrics, views: dictionaryOfNames(arr: self.bezelView)))
+        sideConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "V:|-(>=margin)-[v1]-(>=margin)-|", options: NSLayoutFormatOptions.init(rawValue: 0), metrics: metrics, views: dictionaryOfNames(arr: self.bezelView)))
+        self.applyPriority(priority: UILayoutPriority(rawValue: 999.0), constraints: sideConstraints)
+        self.addConstraints(sideConstraints)
+        
+        // Minimum bezel size, if set
+        if (self.minSize == CGSize.zero){
+            var minSizeConstraints = [NSLayoutConstraint]()
+            minSizeConstraints.append(NSLayoutConstraint.init(item: self.bezelView, attribute: NSLayoutAttribute.width, relatedBy: NSLayoutRelation.greaterThanOrEqual, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: self.minSize.width))
+            minSizeConstraints.append(NSLayoutConstraint.init(item: self.bezelView, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.greaterThanOrEqual, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: self.minSize.height))
+            self.applyPriority(priority: UILayoutPriority(rawValue: 998.0), constraints: minSizeConstraints)
+            self.addConstraints(minSizeConstraints)
+        }
+        
+        // Square aspect ratio, if set
+//        if (self.square) {
+//            NSLayoutConstraint *square = [NSLayoutConstraint constraintWithItem:bezel attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:bezel attribute:NSLayoutAttributeWidth multiplier:1.f constant:0];
+//            square.priority = 997.f;
+//            [bezelConstraints addObject:square];
+//        }
+        self.topSpacer.addConstraint(NSLayoutConstraint.init(item: self.topSpacer, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.greaterThanOrEqual, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: CGFloat(self.margin)))
+        self.bottomSpacer.addConstraint(NSLayoutConstraint.init(item: self.bottomSpacer, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.greaterThanOrEqual, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: CGFloat(self.margin)))
+        // Top and bottom spaces should be equal
+        bezelConstraints.append(NSLayoutConstraint (item: self.topSpacer, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.equal, toItem: self.bottomSpacer, attribute: NSLayoutAttribute.height, multiplier: 1.0, constant: 0.0))
+        
+        // Layout subviews in bezel
+        var paddingConstraints = [NSLayoutConstraint]()
+        for (idx,view) in subviews.enumerated() {
+            bezelConstraints.append(NSLayoutConstraint.init(item: view, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: self.bezelView, attribute: NSLayoutAttribute.centerX, multiplier: 1.0, constant: 0.0))
+            bezelConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "|-(>=margin)-[v1]-(>=margin)-|" , options: NSLayoutFormatOptions.init(rawValue: 0), metrics: metrics, views: dictionaryOfNames(arr: view)))
+            
+            if idx == 0 {
+                bezelConstraints.append(NSLayoutConstraint.init(item: view, attribute: NSLayoutAttribute.top, relatedBy: NSLayoutRelation.equal, toItem: self.bezelView, attribute: NSLayoutAttribute.top, multiplier: 1.0, constant: 0.0))
+            }else if (idx == subviews.count - 1){
+                bezelConstraints.append(NSLayoutConstraint.init(item: view, attribute: NSLayoutAttribute.bottom, relatedBy: NSLayoutRelation.equal, toItem: self.bezelView, attribute: NSLayoutAttribute.bottom, multiplier: 1.0, constant: 0.0))
+            }
+            if idx>0{
+                let padding = NSLayoutConstraint.init(item: view, attribute: NSLayoutAttribute.top, relatedBy: NSLayoutRelation.equal, toItem: subviews[idx-1], attribute: NSLayoutAttribute.bottom, multiplier: 1.0, constant: 0.0)
+                bezelConstraints.append(padding)
+                paddingConstraints.append(padding)
+            }
+        }
+        
+        self.bezelView.addConstraints(bezelConstraints)
+        self.bezelConstraints = bezelConstraints
+        
+        self.paddingConstraints = paddingConstraints
+        self.updatePaddingConstraints()
+        super.updateConstraints()
+
+    }
+    
+    func dictionaryOfNames(arr:UIView...) -> Dictionary<String,UIView> {
+    var d = Dictionary<String,UIView>()
+        for (ix,v) in arr.enumerated(){
+        d["v\(ix+1)"] = v
+    }
+    return d
+}
+    
+    private func updatePaddingConstraints() {
+        for (idx,padding) in self.paddingConstraints.enumerated() {
+            let firstView = padding.firstItem
+            let secondView = padding.secondItem
+            padding.constant = 4.0
+        }
+    }
+    
+    func applyPriority(priority:UILayoutPriority,constraints:[NSLayoutConstraint]){
+        for constraint in constraints {
+            constraint.priority = priority
+        }
     }
     
     deinit{
@@ -103,7 +219,7 @@ class MBProgressHUD: UIView {
         return bezelView
     }()
     
-    lazy private var label: UILabel = {
+     lazy private var label: UILabel = {
         let label = UILabel.init()
         label.adjustsFontSizeToFitWidth = false
         label.textAlignment = NSTextAlignment.center
@@ -142,7 +258,7 @@ class MBProgressHUD: UIView {
         topSpacer.translatesAutoresizingMaskIntoConstraints = false
         topSpacer.isHidden = true
         return topSpacer
-    }()
+    }() 
     
     lazy private var bottomSpacer: UIView = {
         let bottomSpacer = UIView.init()
@@ -238,7 +354,7 @@ class MBProgressHUD: UIView {
         
         
         self.updateViewsForColor(color: self.contentColor)
-        self.setNeedsLayout()
+        self.setNeedsUpdateConstraints()
         
     }
     
@@ -251,13 +367,13 @@ class MBProgressHUD: UIView {
         self.detailsLabel.textColor = color
         self.button.setTitleColor(color, for: UIControlState.normal)
         if self.indicator?.isKind(of: UIActivityIndicatorView.self) == true{
-            let appearance:UIActivityIndicatorView!
-            
-            if kCFCoreFoundationVersionNumber<kCFCoreFoundationVersionNumber_iOS_9_0{
-                appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
-            }else{
-                appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
-            }
+//            let appearance:UIActivityIndicatorView!
+//
+//            if kCFCoreFoundationVersionNumber<kCFCoreFoundationVersionNumber_iOS_9_0{
+//                appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
+//            }else{
+//                appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
+//            }
         }
     }
     

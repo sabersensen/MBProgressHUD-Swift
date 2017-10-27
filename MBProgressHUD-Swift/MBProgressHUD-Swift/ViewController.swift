@@ -16,6 +16,8 @@ class ViewController: UIViewController {
         btn.frame = CGRect.init(x: 0, y: 200, width: 30, height: 40)
         btn.addTarget(self, action: #selector(ViewController.onClick), for: UIControlEvents.touchUpInside)
         self.view.addSubview(btn)
+        self.view.backgroundColor = UIColor .gray
+
         
     }
     

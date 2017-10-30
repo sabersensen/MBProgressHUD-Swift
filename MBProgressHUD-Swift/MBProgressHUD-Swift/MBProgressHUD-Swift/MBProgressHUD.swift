@@ -36,7 +36,7 @@ protocol UIViewLayoutConstraintProtocol {
 extension UIView:UIViewLayoutConstraintProtocol{
     func mb_setContentCompressionResistancePriority() {
         self.translatesAutoresizingMaskIntoConstraints = false
-        self.setContentCompressionResistancePriority(UILayoutPriority(rawValue: 998.0), for: UILayoutConstraintAxis.horizontal)
+        self.setContentCompressionResistancePriority(UILayoutPriority(rawValue: 998.0), for: UILayoutConstraintAxis.horizontal)//设置自动布局优先级
         self.setContentCompressionResistancePriority(UILayoutPriority(rawValue: 998.0), for: UILayoutConstraintAxis.vertical)
     }
 }
@@ -89,7 +89,7 @@ class MBProgressHUD: UIView {
             subviews.insert(self.indicator, at: 1)
         }
         
-        // Remove existing constraints
+        // 移除额外约束
         self.removeConstraints(self.constraints)
         self.topSpacer.removeConstraints(self.topSpacer.constraints)
         self.bottomSpacer.removeConstraints(self.bottomSpacer.constraints)
@@ -107,13 +107,13 @@ class MBProgressHUD: UIView {
         
         // Ensure minimum side margin is kept
         var sideConstraints = [NSLayoutConstraint]()
-        sideConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "|-(>=margin)-[v1]-(>=margin)-|", options: NSLayoutFormatOptions.init(rawValue: 0), metrics: metrics, views: dictionaryOfNames(arr: self.bezelView)))
-        sideConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "V:|-(>=margin)-[v1]-(>=margin)-|", options: NSLayoutFormatOptions.init(rawValue: 0), metrics: metrics, views: dictionaryOfNames(arr: self.bezelView)))
+        sideConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "|-(>=margin)-[v1]-(>=margin)-|", options: NSLayoutFormatOptions.directionLeadingToTrailing, metrics: metrics, views: dictionaryOfNames(arr: self.bezelView)))
+        sideConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "V:|-(>=margin)-[v1]-(>=margin)-|", options: NSLayoutFormatOptions.directionLeadingToTrailing, metrics: metrics, views: dictionaryOfNames(arr: self.bezelView)))
         self.applyPriority(priority: UILayoutPriority(rawValue: 999.0), constraints: sideConstraints)
         self.addConstraints(sideConstraints)
         
         // Minimum bezel size, if set
-        if (self.minSize == CGSize.zero){
+        if (self.minSize != CGSize.zero){
             var minSizeConstraints = [NSLayoutConstraint]()
             minSizeConstraints.append(NSLayoutConstraint.init(item: self.bezelView, attribute: NSLayoutAttribute.width, relatedBy: NSLayoutRelation.greaterThanOrEqual, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: self.minSize.width))
             minSizeConstraints.append(NSLayoutConstraint.init(item: self.bezelView, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.greaterThanOrEqual, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: self.minSize.height))
@@ -136,7 +136,7 @@ class MBProgressHUD: UIView {
         var paddingConstraints = [NSLayoutConstraint]()
         for (idx,view) in subviews.enumerated() {
             bezelConstraints.append(NSLayoutConstraint.init(item: view, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: self.bezelView, attribute: NSLayoutAttribute.centerX, multiplier: 1.0, constant: 0.0))
-            bezelConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "|-(>=margin)-[v1]-(>=margin)-|" , options: NSLayoutFormatOptions.init(rawValue: 0), metrics: metrics, views: dictionaryOfNames(arr: view)))
+            bezelConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "|-(>=margin)-[v1]-(>=margin)-|" , options: NSLayoutFormatOptions.directionLeadingToTrailing, metrics: metrics, views: dictionaryOfNames(arr: view)))
             
             if idx == 0 {
                 bezelConstraints.append(NSLayoutConstraint.init(item: view, attribute: NSLayoutAttribute.top, relatedBy: NSLayoutRelation.equal, toItem: self.bezelView, attribute: NSLayoutAttribute.top, multiplier: 1.0, constant: 0.0))
@@ -154,6 +154,7 @@ class MBProgressHUD: UIView {
         self.bezelConstraints = bezelConstraints
         
         self.paddingConstraints = paddingConstraints
+        
         self.updatePaddingConstraints()
         super.updateConstraints()
 
@@ -171,7 +172,7 @@ class MBProgressHUD: UIView {
         for (idx,padding) in self.paddingConstraints.enumerated() {
             let firstView = padding.firstItem
             let secondView = padding.secondItem
-            padding.constant = 4.0
+//            padding.constant = 0.0
         }
     }
     
@@ -191,7 +192,7 @@ class MBProgressHUD: UIView {
         self.backgroundColor = UIColor.clear
         // Make it invisible for now
         self.alpha = 0.0
-        self.autoresizingMask = UIViewAutoresizing(rawValue: UIViewAutoresizing.RawValue(UInt8(UIViewAutoresizing.flexibleWidth.rawValue)|UInt8(UIViewAutoresizing.flexibleHeight.rawValue)))
+        self.autoresizingMask = [UIViewAutoresizing.flexibleWidth,UIViewAutoresizing.flexibleHeight]
         self.layer.allowsGroupOpacity = false
         
         self.setupViews()
@@ -205,7 +206,7 @@ class MBProgressHUD: UIView {
         let backgroundView = MBBackgroundView.init(frame: self.bounds)
         backgroundView.style = MBProgressHUDBackgroundStyle.SolidColor
         backgroundView.backgroundColor = UIColor.clear
-        backgroundView.autoresizingMask = UIViewAutoresizing(rawValue: UIViewAutoresizing.RawValue(UInt8(UIViewAutoresizing.flexibleWidth.rawValue)|UInt8(UIViewAutoresizing.flexibleHeight.rawValue)))
+        backgroundView.autoresizingMask = [UIViewAutoresizing.flexibleWidth,UIViewAutoresizing.flexibleHeight]
         backgroundView.alpha = 0.0
         return backgroundView
     }()
@@ -255,7 +256,7 @@ class MBProgressHUD: UIView {
     
     lazy private var topSpacer: UIView = {
         let topSpacer = UIView.init()
-        topSpacer.translatesAutoresizingMaskIntoConstraints = false
+        topSpacer.translatesAutoresizingMaskIntoConstraints = false//需要设置自动布局必须为false
         topSpacer.isHidden = true
         return topSpacer
     }() 
@@ -278,8 +279,8 @@ class MBProgressHUD: UIView {
         self.bezelView.addSubview(self.topSpacer)
         self.bezelView.addSubview(self.bottomSpacer)
     }
-    
-    /// 设置约束
+
+    /// 设置运动视差
     private func updateBezelMotionEffects(){
         if kCFCoreFoundationVersionNumber>=kCFCoreFoundationVersionNumber_iOS_7_0 {
             if self.bezelView.responds(to: #selector(UIView.addMotionEffect(_:))){
@@ -340,7 +341,7 @@ class MBProgressHUD: UIView {
         case .Text:
             break
         }
-        indicatorView?.translatesAutoresizingMaskIntoConstraints = false
+        indicatorView?.mb_setContentCompressionResistancePriority()
         self.indicator = indicatorView
         
         /*
@@ -348,10 +349,6 @@ class MBProgressHUD: UIView {
          [(id)indicator setValue:@(self.progress) forKey:@"progress"];
          }
         */
-        
-        indicatorView?.setContentCompressionResistancePriority(UILayoutPriority(rawValue: 998.0), for: UILayoutConstraintAxis.horizontal)
-        indicatorView?.setContentCompressionResistancePriority(UILayoutPriority(rawValue: 998.0), for: UILayoutConstraintAxis.vertical)
-        
         
         self.updateViewsForColor(color: self.contentColor)
         self.setNeedsUpdateConstraints()
@@ -384,16 +381,154 @@ class MBProgressHUD: UIView {
     private func unregisterFromNotifications() {
         
     }
+    
+    //// UI Animated
+    
+    private var minShowTimer:Timer?
+    
+    private var useAnimation:Bool = false
+    
+    private var finished:Bool = false
+    
+    private var graceTime:TimeInterval = 0
+    
+    private var hideDelayTimer:Timer?
+    
+    private lazy var showStarted: NSDate = {
+        let showStarted = NSDate.init()
+        return showStarted
+    }()
+    
+    func showAnimated(animated:Bool) {
+        self.minShowTimer?.invalidate()
+        self.useAnimation = animated
+        self.finished = false
+        if self.graceTime > 0.0 {
+            
+        }else{
+            self.showUsingAnimation(animated: animated)
+        }
+    }
+    
+    private func showUsingAnimation(animated:Bool) {
+        self.bezelView.layer.removeAllAnimations()
+        self.backgroundView.layer.removeAllAnimations()
+        
+        self.hideDelayTimer?.invalidate()
+        
+        self.alpha = 1.0
+        
+//        self.progressObjectDisplayLink = nil;
+        
+        if(animated){
+            
+        }else{
+            self.bezelView.alpha = 1.0;
+            self.backgroundView.alpha = 1.0;
+        }
+
+    }
+    
+    
 }
 
 class MBBackgroundView: UIView {
+    var effectView:UIVisualEffectView!
     
     var style:MBProgressHUDBackgroundStyle!
     
     var color:UIColor!
     
+    override init(frame: CGRect) {
+        super.init(frame:frame)
+        if kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0 {
+            self.style = MBProgressHUDBackgroundStyle.Blur
+            if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0){
+                self.color = UIColor.init(white: 0.8, alpha: 0.6)
+            }else{
+                self.color = UIColor.init(white: 0.95, alpha: 0.6)
+            }
+        }else{
+            self.style = MBProgressHUDBackgroundStyle.SolidColor
+            self.color = UIColor.black.withAlphaComponent(0.8)
+        }
+        self.clipsToBounds = true
+        self.updateForBackgroundStyle()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override var intrinsicContentSize: CGSize {
+        return CGSize.zero
+    }
+    
+    private func updateForBackgroundStyle() {
+        switch self.style! {
+        case .Blur:
+            if kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0 {
+                let effect:UIBlurEffect = UIBlurEffect.init(style: UIBlurEffectStyle.light)
+                let effectView:UIVisualEffectView = UIVisualEffectView.init(effect: effect)
+                self.addSubview(effectView)
+                
+                effectView.frame = self.bounds
+                effectView.autoresizingMask = [UIViewAutoresizing.flexibleHeight,UIViewAutoresizing.flexibleWidth]
+                self.backgroundColor = self.color
+                self.layer.allowsGroupOpacity = false
+            }else{
+                
+            }
+            break
+        case .SolidColor:
+            if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0) {
+                self.effectView?.removeFromSuperview()
+                self.effectView = nil;
+            }else{
+                
+            }
+            self.backgroundColor = self.color;
+            break
+        }
+    }
 }
 
 class MBProgressHUDRoundedButton: UIButton {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.layer.borderWidth = 1.0
+    }
     
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.layer.cornerRadius = ceil(self.bounds.height/2.0)
+    }
+    
+    override var intrinsicContentSize: CGSize{
+        if Int(self.allControlEvents.rawValue) == 0 {
+            return CGSize.zero
+        }
+        
+        var size:CGSize = super.intrinsicContentSize
+        size.width += 20.0
+        return size
+    }
+    
+    override func setTitleColor(_ color: UIColor?, for state: UIControlState) {
+        super.setTitleColor(color, for: state)
+        self.layer.borderColor = color?.cgColor
+    }
+    
+    override var isHighlighted: Bool{
+        willSet{
+            super.isHighlighted = newValue
+            let baseColor:UIColor = self.titleColor(for: UIControlState.selected)!
+            self.backgroundColor = newValue ? baseColor.withAlphaComponent(0.1) : UIColor.clear
+        }
+        
+    }
 }

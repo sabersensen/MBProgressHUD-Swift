@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6927F4881FA7151100F7BB11 /* MBProgressHUDRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6927F4871FA7151100F7BB11 /* MBProgressHUDRoundedButton.swift */; };
+		6927F48A1FA7154800F7BB11 /* MBBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6927F4891FA7154800F7BB11 /* MBBackgroundView.swift */; };
 		69C8B35D1FA027AD00F9D1DE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C8B35C1FA027AD00F9D1DE /* AppDelegate.swift */; };
 		69C8B35F1FA027AD00F9D1DE /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C8B35E1FA027AD00F9D1DE /* ViewController.swift */; };
 		69C8B3621FA027AD00F9D1DE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 69C8B3601FA027AD00F9D1DE /* Main.storyboard */; };
@@ -17,6 +19,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6927F4871FA7151100F7BB11 /* MBProgressHUDRoundedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MBProgressHUDRoundedButton.swift; sourceTree = "<group>"; };
+		6927F4891FA7154800F7BB11 /* MBBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MBBackgroundView.swift; sourceTree = "<group>"; };
 		69C8B3591FA027AD00F9D1DE /* MBProgressHUD-Swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MBProgressHUD-Swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		69C8B35C1FA027AD00F9D1DE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		69C8B35E1FA027AD00F9D1DE /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -74,6 +78,8 @@
 			children = (
 				69C8B36F1FA02A9E00F9D1DE /* UIView+MBExtension.swift */,
 				69C8B3711FA02B6D00F9D1DE /* MBProgressHUD.swift */,
+				6927F4891FA7154800F7BB11 /* MBBackgroundView.swift */,
+				6927F4871FA7151100F7BB11 /* MBProgressHUDRoundedButton.swift */,
 			);
 			path = "MBProgressHUD-Swift";
 			sourceTree = "<group>";
@@ -153,7 +159,9 @@
 				69C8B3701FA02A9E00F9D1DE /* UIView+MBExtension.swift in Sources */,
 				69C8B35F1FA027AD00F9D1DE /* ViewController.swift in Sources */,
 				69C8B35D1FA027AD00F9D1DE /* AppDelegate.swift in Sources */,
+				6927F4881FA7151100F7BB11 /* MBProgressHUDRoundedButton.swift in Sources */,
 				69C8B3721FA02B6D00F9D1DE /* MBProgressHUD.swift in Sources */,
+				6927F48A1FA7154800F7BB11 /* MBBackgroundView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

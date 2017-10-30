@@ -98,21 +98,21 @@ class MBProgressHUD: UIView {
             self.bezelConstraints = nil
         }
         
-        // Center bezel in container (self), applying the offset if set
+        // 设置 bezelView 的中心点约束
         var centeringConstraints = [NSLayoutConstraint]()
         centeringConstraints.append(NSLayoutConstraint.init(item: self.bezelView, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: self, attribute: NSLayoutAttribute.centerX, multiplier: 1.0, constant: self.offset.x))
         centeringConstraints.append(NSLayoutConstraint.init(item: self.bezelView, attribute: NSLayoutAttribute.centerY, relatedBy: NSLayoutRelation.equal, toItem: self, attribute: NSLayoutAttribute.centerY, multiplier: 1.0, constant: self.offset.y))
         self.applyPriority(priority: UILayoutPriority(rawValue: 998.0), constraints: centeringConstraints)
         self.addConstraints(centeringConstraints)
         
-        // Ensure minimum side margin is kept
+        // 设置 bezelView 的左右上下约束
         var sideConstraints = [NSLayoutConstraint]()
         sideConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "|-(>=margin)-[v1]-(>=margin)-|", options: NSLayoutFormatOptions.directionLeadingToTrailing, metrics: metrics, views: dictionaryOfNames(arr: self.bezelView)))
         sideConstraints.append(contentsOf:NSLayoutConstraint.constraints(withVisualFormat: "V:|-(>=margin)-[v1]-(>=margin)-|", options: NSLayoutFormatOptions.directionLeadingToTrailing, metrics: metrics, views: dictionaryOfNames(arr: self.bezelView)))
         self.applyPriority(priority: UILayoutPriority(rawValue: 999.0), constraints: sideConstraints)
         self.addConstraints(sideConstraints)
         
-        // Minimum bezel size, if set
+        // 设置bezelView的最小尺寸 从而设置宽高约束
         if (self.minSize != CGSize.zero){
             var minSizeConstraints = [NSLayoutConstraint]()
             minSizeConstraints.append(NSLayoutConstraint.init(item: self.bezelView, attribute: NSLayoutAttribute.width, relatedBy: NSLayoutRelation.greaterThanOrEqual, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: self.minSize.width))
@@ -432,103 +432,3 @@ class MBProgressHUD: UIView {
     
 }
 
-class MBBackgroundView: UIView {
-    var effectView:UIVisualEffectView!
-    
-    var style:MBProgressHUDBackgroundStyle!
-    
-    var color:UIColor!
-    
-    override init(frame: CGRect) {
-        super.init(frame:frame)
-        if kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0 {
-            self.style = MBProgressHUDBackgroundStyle.Blur
-            if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0){
-                self.color = UIColor.init(white: 0.8, alpha: 0.6)
-            }else{
-                self.color = UIColor.init(white: 0.95, alpha: 0.6)
-            }
-        }else{
-            self.style = MBProgressHUDBackgroundStyle.SolidColor
-            self.color = UIColor.black.withAlphaComponent(0.8)
-        }
-        self.clipsToBounds = true
-        self.updateForBackgroundStyle()
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override var intrinsicContentSize: CGSize {
-        return CGSize.zero
-    }
-    
-    private func updateForBackgroundStyle() {
-        switch self.style! {
-        case .Blur:
-            if kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0 {
-                let effect:UIBlurEffect = UIBlurEffect.init(style: UIBlurEffectStyle.light)
-                let effectView:UIVisualEffectView = UIVisualEffectView.init(effect: effect)
-                self.addSubview(effectView)
-                
-                effectView.frame = self.bounds
-                effectView.autoresizingMask = [UIViewAutoresizing.flexibleHeight,UIViewAutoresizing.flexibleWidth]
-                self.backgroundColor = self.color
-                self.layer.allowsGroupOpacity = false
-            }else{
-                
-            }
-            break
-        case .SolidColor:
-            if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0) {
-                self.effectView?.removeFromSuperview()
-                self.effectView = nil;
-            }else{
-                
-            }
-            self.backgroundColor = self.color;
-            break
-        }
-    }
-}
-
-class MBProgressHUDRoundedButton: UIButton {
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        self.layer.borderWidth = 1.0
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        self.layer.cornerRadius = ceil(self.bounds.height/2.0)
-    }
-    
-    override var intrinsicContentSize: CGSize{
-        if Int(self.allControlEvents.rawValue) == 0 {
-            return CGSize.zero
-        }
-        
-        var size:CGSize = super.intrinsicContentSize
-        size.width += 20.0
-        return size
-    }
-    
-    override func setTitleColor(_ color: UIColor?, for state: UIControlState) {
-        super.setTitleColor(color, for: state)
-        self.layer.borderColor = color?.cgColor
-    }
-    
-    override var isHighlighted: Bool{
-        willSet{
-            super.isHighlighted = newValue
-            let baseColor:UIColor = self.titleColor(for: UIControlState.selected)!
-            self.backgroundColor = newValue ? baseColor.withAlphaComponent(0.1) : UIColor.clear
-        }
-        
-    }
-}

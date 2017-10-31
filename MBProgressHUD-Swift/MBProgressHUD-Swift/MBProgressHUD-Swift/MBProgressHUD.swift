@@ -45,7 +45,11 @@ class MBProgressHUD: UIView {
     
     public var animationType:MBProgressHUDAnimation = MBProgressHUDAnimation.Fade
     
-    public var mode:MBProgressHUDMode = MBProgressHUDMode.Indeterminate
+    public var mode:MBProgressHUDMode = MBProgressHUDMode.Indeterminate{
+        didSet{
+            self.updateIndicators()
+        }
+    }
     
     public var margin:Float = 20.0
     
@@ -169,11 +173,11 @@ class MBProgressHUD: UIView {
 }
     
     private func updatePaddingConstraints() {
-        for (idx,padding) in self.paddingConstraints.enumerated() {
-            let firstView = padding.firstItem
-            let secondView = padding.secondItem
+//        for (idx,padding) in self.paddingConstraints.enumerated() {
+//            let firstView = padding.firstItem
+//            let secondView = padding.secondItem
 //            padding.constant = 0.0
-        }
+//        }
     }
     
     func applyPriority(priority:UILayoutPriority,constraints:[NSLayoutConstraint]){
@@ -220,7 +224,7 @@ class MBProgressHUD: UIView {
         return bezelView
     }()
     
-     lazy private var label: UILabel = {
+     lazy public var label: UILabel = {
         let label = UILabel.init()
         label.adjustsFontSizeToFitWidth = false
         label.textAlignment = NSTextAlignment.center
@@ -232,7 +236,7 @@ class MBProgressHUD: UIView {
         return label
     }()
     
-    lazy private var detailsLabel: UILabel = {
+    lazy public var detailsLabel: UILabel = {
         let detailsLabel = UILabel.init()
         detailsLabel.adjustsFontSizeToFitWidth = false
         detailsLabel.textAlignment = NSTextAlignment.center
@@ -313,8 +317,16 @@ class MBProgressHUD: UIView {
     /*
      关于加载小控件的UI
     */
-    
     var indicator:UIView!
+    
+    var progress:CGFloat = 0.0{
+        didSet{
+            if self.indicator?.isKind(of: MBBarProgressView.self) == true {
+                let bpv = self.indicator as? MBBarProgressView
+                bpv?.progress = self.progress
+            }
+        }
+    }
     
     private func updateIndicators() {
         
@@ -331,6 +343,9 @@ class MBProgressHUD: UIView {
                 self.bezelView.addSubview(indicatorAct)
             }
         case .Determinate:
+            indicatorView?.removeFromSuperview()
+            indicatorView = MBBarProgressView.init()
+            self.bezelView.addSubview(indicatorView!)
             break
         case .DeterminateHorizontalBar:
             break
@@ -344,11 +359,10 @@ class MBProgressHUD: UIView {
         indicatorView?.mb_setContentCompressionResistancePriority()
         self.indicator = indicatorView
         
-        /*
-         if ([indicator respondsToSelector:@selector(setProgress:)]) {
-         [(id)indicator setValue:@(self.progress) forKey:@"progress"];
-         }
-        */
+        if indicatorView?.isKind(of: MBBarProgressView.self) == true {
+            let bpv = indicator as? MBBarProgressView
+            bpv?.progress = self.progress
+        }
         
         self.updateViewsForColor(color: self.contentColor)
         self.setNeedsUpdateConstraints()
@@ -363,14 +377,25 @@ class MBProgressHUD: UIView {
         self.label.textColor = color
         self.detailsLabel.textColor = color
         self.button.setTitleColor(color, for: UIControlState.normal)
+        
         if self.indicator?.isKind(of: UIActivityIndicatorView.self) == true{
-//            let appearance:UIActivityIndicatorView!
-//
-//            if kCFCoreFoundationVersionNumber<kCFCoreFoundationVersionNumber_iOS_9_0{
-//                appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
-//            }else{
-//                appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
-//            }
+            let appearance:UIActivityIndicatorView!
+
+            if kCFCoreFoundationVersionNumber<kCFCoreFoundationVersionNumber_iOS_9_0{
+                appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
+            }else{
+                appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
+            }
+            
+            if appearance.color == nil{
+                let aiv = indicator as? UIActivityIndicatorView
+                aiv?.color = color
+            }
+        }else if self.indicator?.isKind(of: MBBarProgressView.self) == true{
+
+            let bpv = indicator as? MBBarProgressView
+            bpv?.progressColor = color;
+            bpv?.lineColor = color;
         }
     }
     

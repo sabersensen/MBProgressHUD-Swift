@@ -23,8 +23,32 @@ class ViewController: UIViewController {
     
     @objc func onClick() {
         let hud = MBProgressHUD.init(frame: self.view.frame)
+        hud.mode = MBProgressHUDMode.Determinate
+//        hud.label.text = "Loading..."
+//        hud.detailsLabel.text = "Parsing data\n(1/1)"
         hud.showAnimated(animated: false)
         self.view .addSubview(hud)
+        
+        var i:CGFloat = 0.0
+        let timer = DispatchSource.makeTimerSource()
+        timer.setEventHandler {
+            i += 0.2
+            print("----------\(i)")
+            DispatchQueue.main.async {
+                hud.progress = i
+            }
+        }
+        timer.setCancelHandler {
+            
+            print("Timer canceled at \(NSDate())" )
+        }
+        timer.schedule(deadline: .now() + .seconds(1), repeating: 2.0, leeway: .microseconds(10))
+        print("Timer resume at \(NSDate())")
+        timer.resume()
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(10), execute:{
+            timer.cancel()
+        })
+        
     }
 
     override func didReceiveMemoryWarning() {

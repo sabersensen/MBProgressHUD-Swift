@@ -51,17 +51,38 @@ class MBProgressHUD: UIView {
         }
     }
     
-    public var margin:Float = 20.0
+    public var margin:Float = 20.0{
+        didSet{
+            self.updateIndicators()
+        }
+    }
     
     public var opacity:Float = 1.0
     
     public var defaultMotionEffectsEnabled:Bool = true
     
-    public var offset:CGPoint = CGPoint.init(x: 0, y: 0)
+    public var offset:CGPoint = CGPoint.init(x: 0, y: 0){
+        didSet{
+            self.updateIndicators()
+        }
+    }
     
-    public var minSize:CGSize = CGSize.zero
+    public var minSize:CGSize = CGSize.zero{
+        didSet{
+            self.updateIndicators()
+        }
+    }
     
     public var contentColor:UIColor = (kCFCoreFoundationVersionNumber<kCFCoreFoundationVersionNumber_iOS_7_0) ?UIColor.white:UIColor.init(white: 0.0, alpha: 0.7)
+    
+    var customView:UIView!{
+        didSet{
+            if self.mode == .CustomView{
+                updateIndicators()
+            }
+        }
+    }
+    
     
     var paddingConstraints:[NSLayoutConstraint] = [NSLayoutConstraint]()
     
@@ -172,7 +193,7 @@ class MBProgressHUD: UIView {
     return d
 }
     
-    private func updatePaddingConstraints() {
+    fileprivate func updatePaddingConstraints() {
 //        for (idx,padding) in self.paddingConstraints.enumerated() {
 //            let firstView = padding.firstItem
 //            let secondView = padding.secondItem
@@ -190,7 +211,7 @@ class MBProgressHUD: UIView {
         self.unregisterFromNotifications()
     }
     
-    private func commonInit() {
+    fileprivate func commonInit() {
         // Transparent background
         self.isOpaque = false
         self.backgroundColor = UIColor.clear
@@ -206,7 +227,7 @@ class MBProgressHUD: UIView {
     
     
     /// 背景透明
-    lazy private var backgroundView: MBBackgroundView = {
+    lazy fileprivate var backgroundView: MBBackgroundView = {
         let backgroundView = MBBackgroundView.init(frame: self.bounds)
         backgroundView.style = MBProgressHUDBackgroundStyle.SolidColor
         backgroundView.backgroundColor = UIColor.clear
@@ -216,7 +237,7 @@ class MBProgressHUD: UIView {
     }()
     
     //小背景
-    lazy private var bezelView: MBBackgroundView = {
+    lazy fileprivate var bezelView: MBBackgroundView = {
         let bezelView = MBBackgroundView.init()
         bezelView.translatesAutoresizingMaskIntoConstraints = false
         bezelView.layer.cornerRadius = 5.0
@@ -249,7 +270,7 @@ class MBProgressHUD: UIView {
         return detailsLabel
     }()
     
-    lazy private var button: MBProgressHUDRoundedButton = {
+    lazy fileprivate var button: MBProgressHUDRoundedButton = {
         let button = MBProgressHUDRoundedButton.init(type : UIButtonType.custom)
         button.titleLabel?.textAlignment = NSTextAlignment.center
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 12.0)
@@ -258,14 +279,14 @@ class MBProgressHUD: UIView {
         return button
     }()
     
-    lazy private var topSpacer: UIView = {
+    lazy fileprivate var topSpacer: UIView = {
         let topSpacer = UIView.init()
         topSpacer.translatesAutoresizingMaskIntoConstraints = false//需要设置自动布局必须为false
         topSpacer.isHidden = true
         return topSpacer
     }() 
     
-    lazy private var bottomSpacer: UIView = {
+    lazy fileprivate var bottomSpacer: UIView = {
         let bottomSpacer = UIView.init()
         bottomSpacer.translatesAutoresizingMaskIntoConstraints = false
         bottomSpacer.isHidden = true
@@ -273,7 +294,7 @@ class MBProgressHUD: UIView {
     }()
     
     
-    private func setupViews() {
+    fileprivate func setupViews() {
         self.addSubview(self.backgroundView)
         self.addSubview(self.bezelView)
         self.updateBezelMotionEffects()
@@ -285,7 +306,7 @@ class MBProgressHUD: UIView {
     }
 
     /// 设置运动视差
-    private func updateBezelMotionEffects(){
+    fileprivate func updateBezelMotionEffects(){
         if kCFCoreFoundationVersionNumber>=kCFCoreFoundationVersionNumber_iOS_7_0 {
             if self.bezelView.responds(to: #selector(UIView.addMotionEffect(_:))){
                 if self.defaultMotionEffectsEnabled {
@@ -325,13 +346,19 @@ class MBProgressHUD: UIView {
                 let bpv = self.indicator as? MBBarProgressView
                 bpv?.progress = self.progress
             }
+            if self.indicator?.isKind(of: MBRoundProgressView.self) == true {
+                let rpv = self.indicator as? MBRoundProgressView
+                rpv?.progress = self.progress
+            }
         }
     }
     
-    private func updateIndicators() {
+    fileprivate func updateIndicators() {
         
         var indicatorView = self.indicator
         let isActivityIndicator:Bool = indicatorView?.isKind(of: UIActivityIndicatorView.self) == true
+        let isRoundIndicator:Bool = indicatorView?.isKind(of: MBRoundProgressView.self) == true
+
         
         switch self.mode {
         case .Indeterminate:
@@ -342,18 +369,32 @@ class MBProgressHUD: UIView {
                 indicatorAct.startAnimating()
                 self.bezelView.addSubview(indicatorAct)
             }
-        case .Determinate:
+        case .Determinate,.AnnularDeterminate:
+            if isRoundIndicator == false{
+                indicatorView?.removeFromSuperview()
+                indicatorView = MBRoundProgressView.init()
+                self.bezelView.addSubview(indicatorView!)
+            }
+            if self.mode == .AnnularDeterminate{
+                let rpv = indicator as? MBRoundProgressView
+                rpv?.annular = true
+            }
+            break
+        case .DeterminateHorizontalBar:
             indicatorView?.removeFromSuperview()
             indicatorView = MBBarProgressView.init()
             self.bezelView.addSubview(indicatorView!)
             break
-        case .DeterminateHorizontalBar:
-            break
-        case .AnnularDeterminate:
-            break
         case .CustomView:
+            if self.indicator != indicatorView{
+                indicatorView?.removeFromSuperview()
+                indicatorView = self.customView
+                self.bezelView.addSubview(indicatorView!)
+            }
             break
         case .Text:
+            indicatorView?.removeFromSuperview()
+            indicatorView = nil
             break
         }
         indicatorView?.mb_setContentCompressionResistancePriority()
@@ -379,9 +420,9 @@ class MBProgressHUD: UIView {
         self.button.setTitleColor(color, for: UIControlState.normal)
         
         if self.indicator?.isKind(of: UIActivityIndicatorView.self) == true{
-            let appearance:UIActivityIndicatorView!
+            let appearance:UIActivityIndicatorView
 
-            if kCFCoreFoundationVersionNumber<kCFCoreFoundationVersionNumber_iOS_9_0{
+            if kCFCoreFoundationVersionNumber > kCFCoreFoundationVersionNumber_iOS_9_0{
                 appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
             }else{
                 appearance = UIActivityIndicatorView.appearance(whenContainedInInstancesOf: [MBProgressHUD.self])
@@ -396,64 +437,203 @@ class MBProgressHUD: UIView {
             let bpv = indicator as? MBBarProgressView
             bpv?.progressColor = color;
             bpv?.lineColor = color;
+        }else if self.indicator?.isKind(of: MBRoundProgressView.self) == true{
+            
+            let bpv = indicator as? MBRoundProgressView
+            bpv?.progressTintColor = color;
+            bpv?.backgroundTintColor = color.withAlphaComponent(0.1);
         }
     }
     
-    private func registerForNotifications() {
+    fileprivate func registerForNotifications() {
         
     }
     
-    private func unregisterFromNotifications() {
+    fileprivate func unregisterFromNotifications() {
         
     }
     
     //// UI Animated
     
-    private var minShowTimer:Timer?
+    fileprivate var minShowTimer:Timer?
     
-    private var useAnimation:Bool = false
+    fileprivate var useAnimation:Bool = false
     
-    private var finished:Bool = false
+    fileprivate var finished:Bool = false
     
-    private var graceTime:TimeInterval = 0
+    fileprivate var graceTime:TimeInterval = 0
     
-    private var hideDelayTimer:Timer?
+    fileprivate var minShowTime:TimeInterval = 0
+
     
-    private lazy var showStarted: NSDate = {
-        let showStarted = NSDate.init()
-        return showStarted
-    }()
+    fileprivate var hideDelayTimer:Timer?
+    
+    fileprivate var showStarted: Date?
+    
+    fileprivate var graceTimer:Timer?
+    
+    fileprivate var hasFinished:Bool = false
+    
+    var progressObject:Progress?
+    
+    var progressObjectDisplayLink:CADisplayLink?
+    
+    var removeFromSuperViewOnHide:Bool = false
+    
+    var completionFunction:(()->Void)?
     
     func showAnimated(animated:Bool) {
         self.minShowTimer?.invalidate()
         self.useAnimation = animated
         self.finished = false
         if self.graceTime > 0.0 {
-            
+            let timer:Timer = Timer.init(timeInterval: self.graceTime, target: self, selector: #selector(MBProgressHUD.handleGraceTimer), userInfo: nil, repeats: false)
+            RunLoop.current.add(timer, forMode: RunLoopMode.commonModes)
+            self.graceTimer = timer
         }else{
             self.showUsingAnimation(animated: animated)
         }
     }
     
-    private func showUsingAnimation(animated:Bool) {
+    func hideAnimated(animated:Bool) {
+        self.graceTimer?.invalidate()
+        self.useAnimation = animated
+        self.finished = true
+        if self.minShowTime > 0.0 , self.showStarted != nil {
+            let interv:TimeInterval = Date.init().timeIntervalSince(self.showStarted!)
+            if interv < self.minShowTime{
+                let timer:Timer = Timer.init(timeInterval: (self.minShowTime-interv), target: self, selector: #selector(MBProgressHUD.handleMinShowTimer), userInfo: nil, repeats: false)
+                RunLoop.current.add(timer, forMode: RunLoopMode.commonModes)
+                self.minShowTimer = timer
+                return
+            }
+        }
+        self.hideUsingAnimation(animated: self.useAnimation)
+    }
+    
+    @objc func handleGraceTimer() {
+        if !self.hasFinished {
+            self.showUsingAnimation(animated: self.useAnimation)
+        }
+    }
+    
+    @objc func handleMinShowTimer() {
+        self.hideUsingAnimation(animated: self.useAnimation)
+    }
+    
+    fileprivate func showUsingAnimation(animated:Bool) {
         self.bezelView.layer.removeAllAnimations()
         self.backgroundView.layer.removeAllAnimations()
         
         self.hideDelayTimer?.invalidate()
         
+        self.showStarted = Date.init()
         self.alpha = 1.0
         
-//        self.progressObjectDisplayLink = nil;
+        self.setNSProgressDisplayLinkEnabled(enabled: true)
         
         if(animated){
-            
+            self.animateIn(animatingIn: true, type: self.animationType, completion: nil)
         }else{
             self.bezelView.alpha = 1.0;
             self.backgroundView.alpha = 1.0;
         }
-
+        
     }
     
+    func hideUsingAnimation(animated:Bool) {
+        if animated,self.showStarted != nil{
+            self.showStarted = nil
+            self.animateIn(animatingIn: false, type: self.animationType, completion: { (finished:Bool) in
+                self.done()
+            })
+        }else{
+            self.showStarted = nil
+            self.bezelView.alpha = 0.0
+            self.backgroundView.alpha = 1.0
+            self.done()
+        }
+    }
+    
+    func animateIn(animatingIn:Bool,type:MBProgressHUDAnimation,completion:((_ finished:Bool)->Void)?) {
+        var type = type
+        if type == .Zoom {
+            type = animatingIn ? MBProgressHUDAnimation.ZoomIn : MBProgressHUDAnimation.ZoomOut
+        }
+        let small:CGAffineTransform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+        let large:CGAffineTransform = CGAffineTransform.init(scaleX: 1.5, y: 1.5)
+        
+        
+        if animatingIn,self.bezelView.alpha == 0{
+            switch type {
+            case .ZoomIn:
+                self.bezelView.transform = small
+                break
+            case .ZoomOut:
+                self.bezelView.transform = large
+                break
+            default: break
+            }
+        }
+        
+        let animations:() -> Void = {
+            if animatingIn {
+                self.bezelView.transform = CGAffineTransform.identity
+            }else {
+                switch type {
+                case .ZoomIn:
+                    self.bezelView.transform = small
+                    break
+                case .ZoomOut:
+                    self.bezelView.transform = large
+                    break
+                default: break
+                }
+            }
+                self.bezelView.alpha = animatingIn ? 1.0 : 0.0
+                self.backgroundView.alpha = animatingIn ? 1.0 : 0.0
+        }
+
+        if kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0 {
+            UIView.animate(withDuration: 0.3, delay: 0.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 0.0, options: UIViewAnimationOptions.layoutSubviews, animations: animations, completion: completion)
+        }else{
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: UIViewAnimationOptions.beginFromCurrentState, animations: animations, completion: completion)
+        }
+    }
+    
+    
+    func done() {
+        // Cancel any scheduled hideDelayed: calls
+        self.hideDelayTimer?.invalidate()
+        self.setNSProgressDisplayLinkEnabled(enabled: false)
+        
+        if self.hasFinished {
+            self.alpha = 0.0
+            if self.removeFromSuperViewOnHide {
+                self.removeFromSuperview()
+            }
+        }
+        
+        if completionFunction != nil {
+            completionFunction!()
+        }
+        
+        
+    }
+    
+    func setNSProgressDisplayLinkEnabled(enabled:Bool) {
+        if enabled,self.progressObject != nil {
+            if self.progressObjectDisplayLink == nil{
+                self.progressObjectDisplayLink = CADisplayLink.init(target: self, selector: #selector(MBProgressHUD.updateProgressFromProgressObject))
+            }
+        }else{
+            self.progressObjectDisplayLink = nil
+        }
+    }
+    
+    @objc func updateProgressFromProgressObject() {
+        self.progress = CGFloat((self.progressObject?.fractionCompleted)!)
+    }
     
 }
 

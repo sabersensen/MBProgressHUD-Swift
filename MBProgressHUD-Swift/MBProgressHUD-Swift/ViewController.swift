@@ -26,23 +26,27 @@ class ViewController: UIViewController {
         hud.mode = MBProgressHUDMode.Determinate
 //        hud.label.text = "Loading..."
 //        hud.detailsLabel.text = "Parsing data\n(1/1)"
-        hud.showAnimated(animated: false)
-        self.view .addSubview(hud)
-        
+        hud.animationType = .ZoomIn
+        self.view.addSubview(hud)
+        hud.showAnimated(animated: true)
+
         var i:CGFloat = 0.0
         let timer = DispatchSource.makeTimerSource()
         timer.setEventHandler {
-            i += 0.2
+            i += 0.01
             print("----------\(i)")
             DispatchQueue.main.async {
                 hud.progress = i
             }
         }
         timer.setCancelHandler {
-            
+            DispatchQueue.main.async {
+
+            hud.hideAnimated(animated: true)
+            }
             print("Timer canceled at \(NSDate())" )
         }
-        timer.schedule(deadline: .now() + .seconds(1), repeating: 2.0, leeway: .microseconds(10))
+        timer.schedule(deadline: .now() , repeating: 0.1, leeway: .microseconds(10))
         print("Timer resume at \(NSDate())")
         timer.resume()
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(10), execute:{

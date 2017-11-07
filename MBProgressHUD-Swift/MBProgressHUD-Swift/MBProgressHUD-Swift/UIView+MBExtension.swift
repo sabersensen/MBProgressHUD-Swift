@@ -9,5 +9,25 @@
 import UIKit
 
 extension UIView{
+    func showMBProgressHUD(){
+        self.showMBProgressHUD(frame: self.frame,animated:true)
+    }
+    
+    func showMBProgressHUD(frame:CGRect) {
+        self.showMBProgressHUD(frame: frame,animated:true)
+    }
+    
+    func showMBProgressHUD(animated:Bool) {
+        self.showMBProgressHUD(frame: self.frame,animated:animated)
+    }
+    
+    func showMBProgressHUD(frame:CGRect,animated:Bool) {
+        let hud = MBProgressHUD.sharedMBProgressHUD
+        hud.frame = self.frame
+        self.addSubview(hud)
+        hud.showAnimated(animated: animated)
+    }
     
 }
+
+

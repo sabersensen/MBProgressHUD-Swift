@@ -8,52 +8,213 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource{
 
+    lazy var array: [[Example]] = {
+        let array = [
+            [Example.init(text: "Indeterminate mode", selector: #selector(ViewController.indeterminateExample)),
+             Example.init(text: "With label", selector: #selector(ViewController.labelExample)),
+             Example.init(text: "With details label", selector: #selector(ViewController.detailsLabelExample))],
+            [Example.init(text: "Determinate mode", selector: #selector(ViewController.determinateExample)),
+             Example.init(text: "Annular determinate mode", selector: #selector(ViewController.annularDeterminateExample)),
+             Example.init(text: "Bar determinate mode", selector: #selector(ViewController.barDeterminateExample))],
+            [Example.init(text: "Text only", selector: #selector(ViewController.textExample)),
+             Example.init(text: "Custom view", selector: #selector(ViewController.customViewExample)),
+             Example.init(text: "With action button", selector: #selector(ViewController.cancelationExample)),
+             Example.init(text: "Mode switching", selector: #selector(ViewController.modeSwitchingExample))],
+            [Example.init(text: "On window", selector: #selector(ViewController.indeterminateExample)),
+             Example.init(text: "NSURLSession", selector: #selector(ViewController.networkingExample)),
+             Example.init(text: "Determinate with NSProgress", selector: #selector(ViewController.determinateNSProgressExample)),
+             Example.init(text: "Dim background", selector: #selector(ViewController.dimBackgroundExample)),
+             Example.init(text: "Colored", selector: #selector(ViewController.colorExample))
+            ]
+                   ]
+        return array
+    }()
+    
+    lazy var tableView: UITableView = {
+        let tableView:UITableView = UITableView.init(frame: self.view.frame, style: UITableViewStyle.grouped)
+        
+        tableView.dataSource = self
+        tableView.delegate = self
+        return tableView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        let btn = UIButton.init(type: UIButtonType.contactAdd)
-        btn.frame = CGRect.init(x: 0, y: 200, width: 30, height: 40)
-        btn.addTarget(self, action: #selector(ViewController.onClick), for: UIControlEvents.touchUpInside)
-        self.view.addSubview(btn)
-        self.view.backgroundColor = UIColor .white
+        self.view.addSubview(self.tableView)
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return array.count
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return array[section].count
+    }
+    
 
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = UITableViewCell.init(style: UITableViewCellStyle.default, reuseIdentifier: "zsdsbCell")
+        cell.textLabel?.text = array[indexPath.section][indexPath.row].text
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let example = array[indexPath.section][indexPath.row]
+        self.perform(example.selector)
+    }
+    
+    @objc func indeterminateExample()  {
+        self.view.showMBProgressHUD()
+        DispatchQueue.init(label: "com.zoushixin.www").async {
+            self.doSomething()
+            DispatchQueue.main.async {
+                MBProgressHUD.sharedMBProgressHUD.hideAnimated(animated: true)
+            }
+        }
+    }
+    
+    @objc func labelExample() {
+        MBProgressHUD.sharedMBProgressHUD.label.text = "Loading..."
+        self.view.showMBProgressHUD()
+        DispatchQueue.init(label: "com.zoushixin.www").async {
+            self.doSomething()
+            DispatchQueue.main.async {
+                MBProgressHUD.sharedMBProgressHUD.hideAnimated(animated: true)
+            }
+        }
+    }
+    
+    @objc func detailsLabelExample() {
+        MBProgressHUD.sharedMBProgressHUD.label.text = "Loading..."
+        MBProgressHUD.sharedMBProgressHUD.detailsLabel.text = "Parsing data\n(1/1)"
+        self.view.showMBProgressHUD()
+        DispatchQueue.init(label: "com.zoushixin.www").async {
+            self.doSomething()
+            DispatchQueue.main.async {
+                MBProgressHUD.sharedMBProgressHUD.hideAnimated(animated: true)
+            }
+        }
+    }
+    
+    @objc func determinateExample(){
+        MBProgressHUD.sharedMBProgressHUD.label.text = "Loading..."
+        MBProgressHUD.sharedMBProgressHUD.mode = MBProgressHUDMode.Determinate
+        self.view.showMBProgressHUD()
+        DispatchQueue.init(label: "com.zoushixin.www").async {
+            self.doProgressSomething(complete: {
+                DispatchQueue.main.async {
+                    MBProgressHUD.sharedMBProgressHUD.hideAnimated(animated: true)
+                }
+            })
+        }
+    }
+    
+    @objc func annularDeterminateExample() {
+        MBProgressHUD.sharedMBProgressHUD.label.text = "Loading..."
+        MBProgressHUD.sharedMBProgressHUD.mode = MBProgressHUDMode.AnnularDeterminate
+        self.view.showMBProgressHUD()
+        DispatchQueue.init(label: "com.zoushixin.www").async {
+            self.doProgressSomething(complete: {
+                DispatchQueue.main.async {
+                    MBProgressHUD.sharedMBProgressHUD.hideAnimated(animated: true)
+                }
+            })
+        }
+    }
+    
+    @objc func barDeterminateExample() {
+        MBProgressHUD.sharedMBProgressHUD.label.text = "Loading..."
+        MBProgressHUD.sharedMBProgressHUD.mode = MBProgressHUDMode.DeterminateHorizontalBar
+        self.view.showMBProgressHUD()
+        DispatchQueue.init(label: "com.zoushixin.www").async {
+            self.doProgressSomething(complete: {
+                DispatchQueue.main.async {
+                    MBProgressHUD.sharedMBProgressHUD.hideAnimated(animated: true)
+                }
+            })
+        }
+    }
+    
+    @objc func textExample() {
+        MBProgressHUD.sharedMBProgressHUD.mode = MBProgressHUDMode.Text
+        MBProgressHUD.sharedMBProgressHUD.label.text = "Message here!"
+        MBProgressHUD.sharedMBProgressHUD.offset = CGPoint.init(x: 0.0, y: 1000000)
+        self.view.addSubview(MBProgressHUD.sharedMBProgressHUD)
+        DispatchQueue.init(label: "com.zoushixin.www").async {
+            self.doSomething()
+            DispatchQueue.main.async {
+                MBProgressHUD.sharedMBProgressHUD.hideAnimated(animated: true)
+            }
+        }
+    }
+    
+    @objc func customViewExample() {
+        MBProgressHUD.sharedMBProgressHUD.mode = MBProgressHUDMode.CustomView
+        MBProgressHUD.sharedMBProgressHUD.customView = UIImageView.init(image: UIImage.init(named: "Checkmark")?.withRenderingMode(UIImageRenderingMode.alwaysTemplate))
+        MBProgressHUD.sharedMBProgressHUD.label.text = "Done"
+        self.view.showMBProgressHUD()
+        DispatchQueue.init(label: "com.zoushixin.www").async {
+            self.doSomething()
+            DispatchQueue.main.async {
+                MBProgressHUD.sharedMBProgressHUD.hideAnimated(animated: true)
+            }
+        }
+    }
+    
+    @objc func cancelationExample() {
         
     }
     
-    @objc func onClick() {
-        let hud = MBProgressHUD.init(frame: self.view.frame)
-        hud.mode = MBProgressHUDMode.Determinate
-//        hud.label.text = "Loading..."
-//        hud.detailsLabel.text = "Parsing data\n(1/1)"
-        hud.animationType = .ZoomIn
-        self.view.addSubview(hud)
-        hud.showAnimated(animated: true)
-
+    @objc func modeSwitchingExample()  {
+        
+    }
+    
+    @objc func networkingExample() {
+        
+    }
+    
+    @objc func determinateNSProgressExample() {
+        
+    }
+    
+    @objc func dimBackgroundExample()  {
+        
+    }
+    
+    @objc func colorExample() {
+        
+    }
+    
+    
+    func doSomething()  {
+        sleep(UInt32(3.0))
+    }
+    
+    func doProgressSomething(complete:@escaping ()->Void) {
         var i:CGFloat = 0.0
         let timer = DispatchSource.makeTimerSource()
         timer.setEventHandler {
             i += 0.01
             print("----------\(i)")
             DispatchQueue.main.async {
-                hud.progress = i
+                MBProgressHUD.sharedMBProgressHUD.progress = i
             }
         }
         timer.setCancelHandler {
-            DispatchQueue.main.async {
-
-            hud.hideAnimated(animated: true)
-            }
+            complete()
             print("Timer canceled at \(NSDate())" )
         }
-        timer.schedule(deadline: .now() , repeating: 0.1, leeway: .microseconds(10))
+        timer.schedule(deadline: .now() , repeating: 0.03, leeway: .microseconds(3))
         print("Timer resume at \(NSDate())")
         timer.resume()
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(10), execute:{
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3), execute:{
             timer.cancel()
         })
-        
     }
+    
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -61,5 +222,15 @@ class ViewController: UIViewController {
     }
 
 
+}
+
+class Example {
+    var text:String
+    var selector:Selector
+    
+    init(text:String,selector:Selector) {
+        self.text = text
+        self.selector = selector
+    }
 }
 

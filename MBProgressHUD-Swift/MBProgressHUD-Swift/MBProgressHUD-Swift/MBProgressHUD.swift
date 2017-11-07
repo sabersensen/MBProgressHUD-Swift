@@ -9,8 +9,8 @@
 import UIKit
 
 enum MBProgressHUDMode {
-    case Indeterminate
-    case Determinate
+    case Indeterminate //系统菊花
+    case Determinate  //
     case DeterminateHorizontalBar
     case AnnularDeterminate
     case CustomView
@@ -42,6 +42,8 @@ extension UIView:UIViewLayoutConstraintProtocol{
 }
 
 class MBProgressHUD: UIView {
+    
+    static public let sharedMBProgressHUD:MBProgressHUD = MBProgressHUD.init()
     
     public var animationType:MBProgressHUDAnimation = MBProgressHUDAnimation.Fade
     
@@ -146,12 +148,6 @@ class MBProgressHUD: UIView {
             self.addConstraints(minSizeConstraints)
         }
         
-        // Square aspect ratio, if set
-//        if (self.square) {
-//            NSLayoutConstraint *square = [NSLayoutConstraint constraintWithItem:bezel attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:bezel attribute:NSLayoutAttributeWidth multiplier:1.f constant:0];
-//            square.priority = 997.f;
-//            [bezelConstraints addObject:square];
-//        }
         self.topSpacer.addConstraint(NSLayoutConstraint.init(item: self.topSpacer, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.greaterThanOrEqual, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: CGFloat(self.margin)))
         self.bottomSpacer.addConstraint(NSLayoutConstraint.init(item: self.bottomSpacer, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.greaterThanOrEqual, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: CGFloat(self.margin)))
         // Top and bottom spaces should be equal
@@ -472,8 +468,6 @@ class MBProgressHUD: UIView {
     
     fileprivate var graceTimer:Timer?
     
-    fileprivate var hasFinished:Bool = false
-    
     var progressObject:Progress?
     
     var progressObjectDisplayLink:CADisplayLink?
@@ -512,7 +506,7 @@ class MBProgressHUD: UIView {
     }
     
     @objc func handleGraceTimer() {
-        if !self.hasFinished {
+        if !self.finished {
             self.showUsingAnimation(animated: self.useAnimation)
         }
     }
@@ -607,7 +601,7 @@ class MBProgressHUD: UIView {
         self.hideDelayTimer?.invalidate()
         self.setNSProgressDisplayLinkEnabled(enabled: false)
         
-        if self.hasFinished {
+        if self.finished {
             self.alpha = 0.0
             if self.removeFromSuperViewOnHide {
                 self.removeFromSuperview()

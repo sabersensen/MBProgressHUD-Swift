@@ -12,9 +12,17 @@ class MBBackgroundView: UIView {
 
     var effectView:UIVisualEffectView!
     
-    var style:MBProgressHUDBackgroundStyle!
+    var style:MBProgressHUDBackgroundStyle!{
+        didSet{
+            self.updateForBackgroundStyle()
+        }
+    }
     
-    var color:UIColor!
+    var color:UIColor!{
+        didSet{
+            self.backgroundColor = oldValue
+        }
+    }
     
     override init(frame: CGRect) {
         super.init(frame:frame)
@@ -53,16 +61,13 @@ class MBBackgroundView: UIView {
                 effectView.autoresizingMask = [UIViewAutoresizing.flexibleHeight,UIViewAutoresizing.flexibleWidth]
                 self.backgroundColor = self.color
                 self.layer.allowsGroupOpacity = false
-            }else{
-                
+                self.effectView = effectView
             }
             break
         case .SolidColor:
             if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0) {
                 self.effectView?.removeFromSuperview()
                 self.effectView = nil;
-            }else{
-                
             }
             self.backgroundColor = self.color;
             break
